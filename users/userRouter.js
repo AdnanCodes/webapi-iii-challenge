@@ -40,7 +40,14 @@ router.get("/", (req, res) => {
     .catch(() => res.status(500).json({ error: "Couldn't retrieve Users" }));
 });
 
-router.get("/:id", (req, res) => {});
+//Get User by ID
+router.get("/:id", validateUserId, (req, res) => {
+  Users.getById(req.params.id)
+    .then(user => res.status(200).json(user))
+    .catch(() =>
+      res.status(500).json({ errorMessage: "Unexpected error with Database" })
+    );
+});
 
 //Gets all posts for specific user
 router.get("/:id/posts", validateUserId, (req, res) => {
