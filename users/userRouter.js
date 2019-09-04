@@ -17,10 +17,15 @@ router.post("/", validateUser, (req, res) => {
 });
 
 //Creates a new post for specific user
-router.post("/:id/posts", validateUserId, (req, res) => {
-  console.log(req.body);
+router.post("/:id/posts", validatePost, (req, res) => {
   Posts.insert(req.body)
-    .then(posts => res.status(201).json(posts))
+    .then(posts => {
+      if (posts) {
+        res.status(201).json(posts);
+      } else {
+        res.status(404).json({ errorMessage: "User with that ID isn't found" });
+      }
+    })
     .catch(() =>
       res.status(500).json({
         error: "There was an error while saving the posts to the database"
@@ -37,7 +42,14 @@ router.get("/", (req, res) => {
 
 router.get("/:id", (req, res) => {});
 
-router.get("/:id/posts", (req, res) => {});
+//Gets all posts for specific user
+router.get("/:id/posts", validateUserId, (req, res) => {
+  Users.getUserPosts(req.params.id)
+    .then(posts => res.status(200).json(posts))
+    .catch(() =>
+      res.status(500).json({ errorMessage: "Couldn't retrieve users Posts" })
+    );
+});
 
 router.delete("/:id", (req, res) => {});
 
@@ -49,7 +61,6 @@ function validateUserId(req, res, next) {
   Users.getById(req.params.id).then(user => {
     if (user) {
       req.user = user;
-      console.log("user in validate", user);
       next();
     } else {
       res.status(400).json({ message: "invalid user id" });
@@ -84,6 +95,8 @@ function validatePost(req, res, next) {
     res.status(400).json({ errorMessage: "Missing a body" });
   } else if (req.body.text === undefined) {
     res.status(400).json({ errorMessage: "Missing a Text Field" });
+  } else if (req.body.user_id === undefined) {
+    res.status(400).json({ errorMessage: "Missing a user_id" });
   } else {
     next();
   }
