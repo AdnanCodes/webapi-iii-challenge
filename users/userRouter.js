@@ -52,13 +52,27 @@ router.get("/:id", validateUserId, (req, res) => {
 //Gets all posts for specific user
 router.get("/:id/posts", validateUserId, (req, res) => {
   Users.getUserPosts(req.params.id)
-    .then(posts => res.status(200).json(posts))
+    .then(posts => {
+      if (posts.length > 0) {
+        res.status(200).json(posts);
+      } else {
+        res.status(200).json({ userPosts: "There are no posts on this user" });
+      }
+    })
     .catch(() =>
       res.status(500).json({ errorMessage: "Couldn't retrieve users Posts" })
     );
 });
 
-router.delete("/:id", (req, res) => {});
+router.delete("/:id", validateUserId, (req, res) => {
+  Users.remove(req.params.id)
+    .then(user => res.status(200).json({ recordsDeleted: `${user}` }))
+    .catch(() =>
+      res
+        .status(500)
+        .json({ errorMessage: "Couldn't delete user from the database" })
+    );
+});
 
 router.put("/:id", (req, res) => {});
 
