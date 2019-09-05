@@ -74,7 +74,13 @@ router.delete("/:id", validateUserId, (req, res) => {
     );
 });
 
-router.put("/:id", (req, res) => {});
+router.put("/:id", [validateUserId, validateUser], (req, res) => {
+  Users.update(req.params.id, req.body)
+    .then(user => res.status(202).json(user))
+    .catch(() =>
+      res.status(500).json({ errorMessage: "User couldn't be updated" })
+    );
+});
 
 //custom middleware
 
